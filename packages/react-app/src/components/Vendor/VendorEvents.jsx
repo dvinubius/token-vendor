@@ -3,7 +3,7 @@ import { List, Card } from "antd";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import React from "react";
 import { Address, Balance } from "..";
-import { softTextCol } from "../../styles";
+import { softTextColor } from "../../styles";
 import CustomAddress from "../CustomKit/CustomAddress";
 import CustomBalance from "../CustomKit/CustomBalance";
 
@@ -55,7 +55,7 @@ const VendorEvents = ({ readContracts, localProvider, mainnetProvider }) => {
                           padding: "0.25rem 0.5rem",
                         }}
                       >
-                        <span style={{ fontSize: "1rem", color: softTextCol }}>{idx === 0 ? "Buyer" : "Seller"}</span>
+                        <span style={{ fontSize: "1rem", color: softTextColor }}>{idx === 0 ? "Buyer" : "Seller"}</span>
                         <CustomAddress value={item.args[0]} ensProvider={mainnetProvider} fontSize={16} />
                       </div>
                       <div

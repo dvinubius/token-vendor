@@ -7,7 +7,7 @@ import { DollarOutlined, LinkOutlined, SwapOutlined } from "@ant-design/icons";
 import "./Vendor.css";
 import "../Shared/FlexCard.css";
 import CustomBalance from "../CustomKit/CustomBalance";
-import { errorCol, primaryCol, softTextCol, swapGradient } from "../../styles";
+import { errorColor, primaryColor, softTextColor, swapGradient } from "../../styles";
 import { exactFloatToFixed } from "../../helpers/numeric";
 import SectionTitle from "../CustomKit/SectionTitle";
 import SrtEthBalances from "../Shared/SrtEthBalances";
@@ -217,7 +217,7 @@ const Vendor = ({
         style={{ textAlign: "left" }}
         prefix={<span style={{ marginRight: "0.5rem" }}>SRT</span>}
         suffix={
-          <span style={{ color: softTextCol, marginRight: "0.5rem", cursor: "pointer" }} onClick={applyMaxTokenBuy}>
+          <span style={{ color: softTextColor, marginRight: "0.5rem", cursor: "pointer" }} onClick={applyMaxTokenBuy}>
             max{" "}
             <CustomBalance noClick etherMode={false} customSymbol="" size={16} padding={0} balance={maxTokenBuyable} />
           </span>
@@ -236,13 +236,13 @@ const Vendor = ({
       >
         {hasValidBuyAmount && (
           <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-            <div style={{ color: softTextCol, fontSize: "1rem", display: "flex" }}>You pay</div>{" "}
+            <div style={{ color: softTextColor, fontSize: "1rem", display: "flex" }}>You pay</div>{" "}
             <CustomBalance etherMode balance={ethCostToPurchaseTokens} dollarMultiplier={price} size={16} padding={0} />{" "}
           </div>
         )}
         {tokenBuyAmountError && (
           <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-            <div style={{ color: errorCol }}>{tokenBuyAmountError}</div>
+            <div style={{ color: errorColor }}>{tokenBuyAmountError}</div>
           </div>
         )}
         <Button
@@ -290,7 +290,7 @@ const Vendor = ({
         style={{ textAlign: "left" }}
         prefix={<span style={{ marginRight: "0.5rem" }}>SRT</span>}
         suffix={
-          <span style={{ color: softTextCol, marginRight: "0.5rem", cursor: "pointer" }} onClick={applyMaxTokenSell}>
+          <span style={{ color: softTextColor, marginRight: "0.5rem", cursor: "pointer" }} onClick={applyMaxTokenSell}>
             max{" "}
             <CustomBalance noClick etherMode={false} customSymbol="" size={16} padding={0} balance={userTokenBalance} />
           </span>
@@ -308,13 +308,13 @@ const Vendor = ({
       >
         {hasValidSellAmount && (
           <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-            <div style={{ color: softTextCol, fontSize: "1rem", display: "flex" }}>You receive</div>
+            <div style={{ color: softTextColor, fontSize: "1rem", display: "flex" }}>You receive</div>
             <CustomBalance etherMode balance={ethValueToSellTokens} dollarMultiplier={price} size={16} padding={0} />
           </div>
         )}
         {tokenSellAmountError && (
           <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-            <div style={{ color: errorCol }}>{tokenSellAmountError}</div>
+            <div style={{ color: errorColor }}>{tokenSellAmountError}</div>
           </div>
         )}
         <Button

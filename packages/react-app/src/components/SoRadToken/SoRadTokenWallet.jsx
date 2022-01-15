@@ -1,7 +1,7 @@
 import { LinkOutlined, SendOutlined } from "@ant-design/icons";
 import { Button, Card, Divider, Input, Spin } from "antd";
 import React, { useEffect, useState } from "react";
-import { errorCol, primaryCol, softTextCol } from "../../styles";
+import { errorColor, primaryColor, softTextColor } from "../../styles";
 import CustomAddressInput from "../CustomKit/CustomAddressInput";
 import CustomBalance from "../CustomKit/CustomBalance";
 import SectionTitle from "../CustomKit/SectionTitle";
@@ -19,12 +19,12 @@ const SoRadTokenWallet = ({
   height,
   tokenAddress,
 }) => {
-  if (!tokenBalance) return "";
-
   const [tokenSendToAddress, setTokenSendToAddress] = useState();
   const [tokenSendAmount, setTokenSendAmount] = useState();
   const [tokenSendAmountParsed, setTokenSendAmountParsed] = useState();
   const [tokenSendAmountError, setTokenSendAmountError] = useState();
+
+  if (!tokenBalance) return "";
 
   const handleClickOnMax = () => {
     setTokenSendAmount((+ethers.utils.formatEther(tokenBalance)).toFixed(2));
@@ -139,7 +139,7 @@ const SoRadTokenWallet = ({
                   padding: "0.25rem 0",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: primaryCol,
+                  color: primaryColor,
                   borderTop: "1px solid rgba(24, 144, 255, 0.4)",
                   borderBottom: "1px solid rgba(24, 144, 255, 0.4)",
                   marginBottom: "4px",
@@ -160,10 +160,10 @@ const SoRadTokenWallet = ({
                   size="large"
                   style={{ textAlign: "left" }}
                   placeholder="amount to send"
-                  prefix={<span style={{ color: softTextCol, marginRight: "0.5rem" }}>SRT</span>}
+                  prefix={<span style={{ color: softTextColor, marginRight: "0.5rem" }}>SRT</span>}
                   suffix={
                     <span
-                      style={{ color: softTextCol, marginRight: "0.5rem", cursor: "pointer" }}
+                      style={{ color: softTextColor, marginRight: "0.5rem", cursor: "pointer" }}
                       onClick={handleClickOnMax}
                     >
                       max{" "}
@@ -181,7 +181,7 @@ const SoRadTokenWallet = ({
                   onChange={updateSendAmount}
                 />
                 {tokenSendAmountError && (
-                  <div style={{ color: errorCol, position: "absolute" }}>{tokenSendAmountError}</div>
+                  <div style={{ color: errorColor, position: "absolute" }}>{tokenSendAmountError}</div>
                 )}
               </div>
 
@@ -199,7 +199,7 @@ const SoRadTokenWallet = ({
             </div>
             <div>
               <Divider orientation="left">My Balances</Divider>
-              <SrtEthBalances tokenBalance={tokenBalance} ethBalance={userETHBalance} valuesColor={primaryCol} />
+              <SrtEthBalances tokenBalance={tokenBalance} ethBalance={userETHBalance} valuesColor={primaryColor} />
             </div>
           </div>
         )}

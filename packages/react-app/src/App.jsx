@@ -10,8 +10,8 @@ import {
   useUserProviderAndSigner,
 } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import React, { useCallback, useEffect, useState } from "react";
-import { Link, Route, Switch, useLocation } from "react-router-dom";
+import React, { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import { BrowserRouter, Link, Route, Switch, useLocation } from "react-router-dom";
 import "./App.css";
 import {
   Account,
@@ -35,7 +35,13 @@ import SoRadTokenWallet from "./components/SoRadToken/SoRadTokenWallet";
 import Vendor from "./components/Vendor/Vendor";
 import SoRadIcon from "./components/SoRadToken/SoRadIcon";
 import VendorEvents from "./components/Vendor/VendorEvents";
+import { useWindowWidth } from "@react-hook/window-size";
+
 import SectionTitle from "./components/CustomKit/SectionTitle";
+import { softTextColor, swapGradient } from "./styles";
+import CustomAccount from "./components/CustomKit/CustomAccount";
+import CustomNetworkDisplay from "./components/CustomKit/CustomNetworkDisplay";
+import CustomHeader from "./components/CustomKit/CustomHeader";
 
 const { ethers } = require("ethers");
 /*
@@ -73,7 +79,15 @@ const providers = [
   "https://rpc.scaffoldeth.io:48544",
 ];
 
+export const AppContext = createContext({});
+export const ThemeContext = createContext({
+  theme: "",
+  setTheme: () => {},
+});
+export const LayoutContext = createContext({});
 function App(props) {
+  const windowWidth = useWindowWidth();
+
   // specify all the chains your app is available on. Eg: ['localhost', 'mainnet', ...otherNetworks ]
   // reference './constants.js' for other networks
   const networkOptions = ["localhost", "mainnet", "rinkeby"];
@@ -96,7 +110,6 @@ function App(props) {
   const localProvider = useStaticJsonRPC([
     process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : targetNetwork.rpcUrl,
   ]);
-  debugger;
   const mainnetProvider = useStaticJsonRPC(providers);
 
   if (DEBUG) console.log(`Using ${selectedNetwork} network`);
@@ -249,219 +262,284 @@ function App(props) {
 
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
-  return (
-    <div className="App">
-      {/* ✏️ Edit the header and change the title to your project name */}
-      <Header />
-      <NetworkDisplay
-        NETWORKCHECK={NETWORKCHECK}
-        localChainId={localChainId}
-        selectedChainId={selectedChainId}
-        targetNetwork={targetNetwork}
-        logoutOfWeb3Modal={logoutOfWeb3Modal}
-      />
-      <Menu style={{ textAlign: "center" }} selectedKeys={[location.pathname]} mode="horizontal">
-        <Menu.Item key="/">
-          <Link to="/">So Rad!</Link>
-        </Menu.Item>
-        <Menu.Item key="/debug">
-          <Link to="/debug">Debug Contracts</Link>
-        </Menu.Item>
-      </Menu>
+  const appContext = {
+    contractConfig,
+    readContracts,
+    writeContracts,
+    userSigner,
+    localProvider,
+    userAddress: address,
+    tx,
+    userEthBalance: yourLocalBalance,
+    price,
+    gasPrice,
+    localChainId,
+    blockExplorer,
+  };
 
-      <div className="AppScroller">
-        <Switch>
-          <Route exact path="/">
-            <div className="AppCenteredCol">
-              <div style={{ padding: "2rem 0 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <div
+  const layoutContext = {
+    windowWidth,
+  };
+
+  const [theme, setTheme] = useState(window.localStorage.getItem("theme"));
+  const themeContext = useMemo(() => ({ theme, setTheme }), [theme]);
+
+  return (
+    <LayoutContext.Provider value={layoutContext}>
+      <ThemeContext.Provider value={themeContext}>
+        <AppContext.Provider value={appContext}>
+          <div className="App">
+            {/* ✏️ Edit the header and change the title to your project name */}
+            <BrowserRouter>
+              <div
+                style={{
+                  width: "fit-content",
+                  borderRight: "1px solid #efefef",
+                  borderBottom: "1px solid #efefef",
+                  background: swapGradient,
+                }}
+              >
+                <Link to="/">
+                  <CustomHeader />
+                </Link>
+              </div>
+              <Link to="/contracts">
+                <Button
+                  type="default"
                   style={{
-                    fontSize: "1.25rem",
+                    position: "absolute",
+                    bottom: "2.5rem",
+                    right: "0rem",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: "1rem",
-                    margin: "0 0 1rem",
+                    opacity: 0.8,
+                    boxShadow: "0 3px 5px 1px #eaeaea",
+                    zIndex: 10,
                   }}
                 >
-                  <SoRadIcon size={42} /> So Rad Token <SoRadIcon size={42} />
-                </div>
-                {!readyAll && (
-                  <div
-                    style={{
-                      height: "40vh",
-                      margin: "auto",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Spin size="large" />
+                  <div style={{ fontSize: "1rem", color: softTextColor }}>
+                    <span style={{ marginRight: "0.75rem", fontSize: "0.875rem" }}>🛠</span>Debug
                   </div>
-                )}
-                {readyAll && (
-                  <div
-                    style={{
-                      maxWidth: "57rem",
-                      marginTop: "2rem",
-                      display: "flex",
-                      flexWrap: "wrap",
-                      justifyContent: "center",
-                      gap: "4rem",
-                    }}
-                  >
-                    <div>
-                      <SoRadTokenWallet
-                        tokenBalance={userTokenBalance}
-                        mainnetProvider={mainnetProvider}
-                        writeContracts={writeContracts}
-                        userETHBalance={yourLocalBalance}
-                        tx={tx}
-                        height={490}
-                        tokenAddress={tokenAddress}
+                </Button>
+              </Link>
+
+              <div className="AppScroller">
+                <Switch>
+                  <Route exact path="/">
+                    <div className="AppCenteredCol">
+                      <div
+                        style={{ padding: "2rem 0 0", display: "flex", flexDirection: "column", alignItems: "center" }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "1.25rem",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "1rem",
+                            margin: "0 0 1rem",
+                          }}
+                        >
+                          <SoRadIcon size={42} /> So Rad Token <SoRadIcon size={42} />
+                        </div>
+                        {!readyAll && (
+                          <div
+                            style={{
+                              height: "40vh",
+                              margin: "auto",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Spin size="large" />
+                          </div>
+                        )}
+                        {readyAll && (
+                          <div
+                            style={{
+                              maxWidth: "57rem",
+                              marginTop: "2rem",
+                              display: "flex",
+                              flexWrap: "wrap",
+                              justifyContent: "center",
+                              gap: "4rem",
+                            }}
+                          >
+                            <div>
+                              <SoRadTokenWallet
+                                tokenBalance={userTokenBalance}
+                                mainnetProvider={mainnetProvider}
+                                writeContracts={writeContracts}
+                                userETHBalance={yourLocalBalance}
+                                tx={tx}
+                                height={490}
+                                tokenAddress={tokenAddress}
+                              />
+                            </div>
+
+                            <Vendor
+                              vendorAddress={vendorAddress}
+                              userTokenBalance={userTokenBalance}
+                              readContracts={readContracts}
+                              writeContracts={writeContracts}
+                              contractConfig={contractConfig}
+                              localProvider={localProvider}
+                              mainnetProvider={mainnetProvider}
+                              userSigner={userSigner}
+                              price={price}
+                              gasPrice={gasPrice}
+                              tx={tx}
+                              DEBUG={DEBUG}
+                              userAddress={address}
+                              userEthBalance={yourLocalBalance}
+                              height={490}
+                            />
+                            <Divider style={{ marginBottom: "0" }}>
+                              <SectionTitle text="Vendor Events" />
+                            </Divider>
+                            <VendorEvents
+                              readContracts={readContracts}
+                              localProvider={localProvider}
+                              mainnetProvider={mainnetProvider}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Route>
+
+                  <Route exact path="/debug">
+                    <div className="AppCenteredCol">
+                      <Contract
+                        name="Vendor"
+                        signer={userSigner}
+                        provider={localProvider}
+                        address={address}
+                        blockExplorer={blockExplorer}
+                        contractConfig={contractConfig}
+                      />
+
+                      <Contract
+                        name="SoRadToken"
+                        signer={userSigner}
+                        provider={localProvider}
+                        address={address}
+                        blockExplorer={blockExplorer}
+                        contractConfig={contractConfig}
                       />
                     </div>
+                  </Route>
+                </Switch>
+              </div>
+            </BrowserRouter>
 
-                    <Vendor
-                      vendorAddress={vendorAddress}
-                      userTokenBalance={userTokenBalance}
-                      readContracts={readContracts}
-                      writeContracts={writeContracts}
-                      contractConfig={contractConfig}
-                      localProvider={localProvider}
-                      mainnetProvider={mainnetProvider}
-                      userSigner={userSigner}
-                      price={price}
-                      gasPrice={gasPrice}
-                      tx={tx}
-                      DEBUG={DEBUG}
-                      userAddress={address}
-                      userEthBalance={yourLocalBalance}
-                      height={490}
-                    />
-                    <Divider style={{ marginBottom: "0" }}>
-                      <SectionTitle text="Vendor Events" />
-                    </Divider>
-                    <VendorEvents
-                      readContracts={readContracts}
-                      localProvider={localProvider}
-                      mainnetProvider={mainnetProvider}
-                    />
-                  </div>
+            <ThemeSwitch />
+
+            {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
+            <div
+              style={{
+                position: "fixed",
+                textAlign: "right",
+                right: 0,
+                top: 0,
+                padding: "0.5rem 1rem",
+
+                height: 55,
+              }}
+              className="hud hudTop"
+            >
+              <div style={{ display: "flex", flex: 1, gap: "1rem", alignItems: "center" }}>
+                <div>
+                  <NetworkSwitch
+                    networkOptions={networkOptions}
+                    selectedNetwork={selectedNetwork}
+                    setSelectedNetwork={setSelectedNetwork}
+                  />
+                </div>
+                <CustomAccount
+                  address={address}
+                  localProvider={localProvider}
+                  userSigner={userSigner}
+                  mainnetProvider={mainnetProvider}
+                  price={price}
+                  web3Modal={web3Modal}
+                  loadWeb3Modal={loadWeb3Modal}
+                  logoutOfWeb3Modal={logoutOfWeb3Modal}
+                  blockExplorer={blockExplorer}
+                  connectedNetworkDisplay={
+                    injectedProvider && (
+                      <CustomNetworkDisplay
+                        NETWORKCHECK={NETWORKCHECK}
+                        localChainId={localChainId}
+                        selectedChainId={selectedChainId}
+                        targetNetwork={targetNetwork}
+                        logoutOfWeb3Modal={logoutOfWeb3Modal}
+                      />
+                    )
+                  }
+                />
+              </div>
+              <div style={{ position: "absolute", right: "6.4rem" }}>
+                {userSigner && (
+                  <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
                 )}
               </div>
             </div>
-          </Route>
 
-          <Route exact path="/debug">
-            <div className="AppCenteredCol">
-              <Contract
-                name="Vendor"
-                signer={userSigner}
-                provider={localProvider}
-                address={address}
-                blockExplorer={blockExplorer}
-                contractConfig={contractConfig}
-              />
-
-              <Contract
-                name="SoRadToken"
-                signer={userSigner}
-                provider={localProvider}
-                address={address}
-                blockExplorer={blockExplorer}
-                contractConfig={contractConfig}
-              />
-            </div>
-          </Route>
-        </Switch>
-      </div>
-
-      <ThemeSwitch />
-
-      {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-      <div
-        style={{
-          position: "fixed",
-          textAlign: "right",
-          right: 0,
-          top: 0,
-          padding: 10,
-        }}
-        className="hud hudTop"
-      >
-        <div style={{ display: "flex", flex: 1, alignItems: "center" }}>
-          <div style={{ marginRight: 20 }}>
-            <NetworkSwitch
-              networkOptions={networkOptions}
-              selectedNetwork={selectedNetwork}
-              setSelectedNetwork={setSelectedNetwork}
-            />
-          </div>
-          <Account
-            address={address}
-            localProvider={localProvider}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            price={price}
-            web3Modal={web3Modal}
-            loadWeb3Modal={loadWeb3Modal}
-            logoutOfWeb3Modal={logoutOfWeb3Modal}
-            blockExplorer={blockExplorer}
-          />
-        </div>
-        <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
-      </div>
-
-      {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div
-        style={{
-          position: "fixed",
-          textAlign: "left",
-          left: 0,
-          bottom: 20,
-          padding: 10,
-        }}
-        className="hud hudBottom"
-      >
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={8}>
-            <Ramp price={price} address={address} networks={NETWORKS} />
-          </Col>
-
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-            <GasGauge gasPrice={gasPrice} />
-          </Col>
-          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
-              onClick={() => {
-                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
+            {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
+            <div
+              style={{
+                position: "fixed",
+                textAlign: "left",
+                left: 0,
+                bottom: 20,
+                padding: 10,
               }}
-              size="large"
-              shape="round"
+              className="hud hudBottom"
             >
-              <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                💬
-              </span>
-              Support
-            </Button>
-          </Col>
-        </Row>
+              <Row align="middle" gutter={[4, 4]}>
+                <Col span={8}>
+                  <Ramp price={price} address={address} networks={NETWORKS} />
+                </Col>
 
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={24}>
-            {
-              /*  if the local provider has a signer, let's show the faucet:  */
-              faucetAvailable ? (
-                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
-              ) : (
-                ""
-              )
-            }
-          </Col>
-        </Row>
-      </div>
-    </div>
+                <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
+                  <GasGauge gasPrice={gasPrice} />
+                </Col>
+                <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
+                  <Button
+                    onClick={() => {
+                      window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
+                    }}
+                    size="large"
+                    shape="round"
+                  >
+                    <span style={{ marginRight: 8 }} role="img" aria-label="support">
+                      💬
+                    </span>
+                    Support
+                  </Button>
+                </Col>
+              </Row>
+
+              <Row align="middle" gutter={[4, 4]}>
+                <Col span={24}>
+                  {
+                    /*  if the local provider has a signer, let's show the faucet:  */
+                    faucetAvailable ? (
+                      <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
+                    ) : (
+                      ""
+                    )
+                  }
+                </Col>
+              </Row>
+            </div>
+          </div>
+        </AppContext.Provider>
+      </ThemeContext.Provider>
+    </LayoutContext.Provider>
   );
 }
 
